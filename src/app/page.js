@@ -1,95 +1,99 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import React, {useEffect, useState} from 'react';
+import { useRouter } from 'next/navigation';
+import { message, Pagination } from "antd";
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+import EmployeeTable from "@/components/home/EmployeeTable";
+import CustomLoader from "@/components/common/custom-loader/CustomLoader";
+import EmployeeDeleteModel from "@/components/home/EmployeeDeleteModel";
+import NoContent from "@/components/common/no-content/NoContent";
+import { useGetAllEmployeesQuery, useDeleteEmployeeMutation } from "@/slicers/employeeSlice";
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+import styles from './page.module.css';
+
+const HomeScreen = () => {
+    const router = useRouter();
+
+    const [employees, setEmployees] = useState([]);
+
+    const [visibleSalaries, setVisibleSalaries] = useState({});
+    const [page, setPage] = useState(1);
+    const [size, setSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [deleteId, setDeleteId] = useState(0);
+    const [isDeleteModelOpen, setIsDeleteModelOpen] = useState(false);
+
+    const { data: allEmployeeData, isLoading: allEmployeeIsLoading, refetch: allEmployeeRefetch,
+        error: allEmployeeError } = useGetAllEmployeesQuery({ page, size });
+    const [deleteEmployee, { isLoading: deleteEmployeeIsLoading }] = useDeleteEmployeeMutation();
+
+    useEffect(() => {
+        if(allEmployeeData?.employees && allEmployeeData?.pageCount){
+            setEmployees(allEmployeeData?.employees);
+            setTotalPages(allEmployeeData?.pageCount);
+        }
+    }, [allEmployeeData]);
+
+    const toggleSalaryVisibility = (id) => {
+        setVisibleSalaries(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    }
+
+    const editEmployeeHandler = (id) => {
+        router.push(`/create?edit_id=${id}`);
+    }
+
+    const deleteEmployeeHandler = (id) => {
+        setDeleteId(id);
+        setIsDeleteModelOpen(true);
+    }
+
+    const deleteConfirmHandler = async () => {
+        try{
+            const res = await deleteEmployee(deleteId).unwrap();
+            setDeleteId(0);
+            setIsDeleteModelOpen(false);
+
+            message.success(res?.message);
+
+            await allEmployeeRefetch();
+        }catch (error){
+            console.log(error);
+            message.error(error?.data?.message);
+        }
+    }
+
+    const deleteCancelHandler = () => {
+        setDeleteId(0);
+        setIsDeleteModelOpen(false);
+    }
+
+    const handlePageChange = (page, pageSize) => {
+        setPage(page);
+        setSize(pageSize);
+    };
+
+    if(allEmployeeIsLoading || deleteEmployeeIsLoading){
+        return <CustomLoader/>
+    }else {
+        return (
+            <div className={styles.homePage}>
+                <div className={styles.homePageMainContainer}>
+                    <p className={styles.homePageTitle}>All Employees</p>
+                    {employees.length === 0 ? <NoContent/> :
+                    <EmployeeTable employees={employees} visibleSalaries={visibleSalaries}
+                                   toggleSalaryVisibility={toggleSalaryVisibility} editEmployeeHandler={editEmployeeHandler}
+                                   deleteEmployeeHandler={deleteEmployeeHandler}/>}
+                    <Pagination current={page} total={totalPages * size} pageSize={size} onChange={handlePageChange}
+                                showSizeChanger={false}/>
+                    {isDeleteModelOpen && <EmployeeDeleteModel onCancel={deleteCancelHandler} visible={isDeleteModelOpen}
+                                                               onConfirm={deleteConfirmHandler}/>}
+                </div>
+            </div>
+        );
+    }
 }
+
+export default HomeScreen;

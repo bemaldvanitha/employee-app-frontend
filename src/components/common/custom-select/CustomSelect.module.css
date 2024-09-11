@@ -1,0 +1,38 @@
+.customSelectContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: flex-start;
+    width: 650px;
+    margin: 15px 0;
+}
+
+.customSelectLabel {
+    font-family: var(--font-primary);
+    font-weight: bold;
+    font-size: 20px;
+    margin: 10px 0;
+}
+
+.customSelect {
+    font-family: var(--font-primary);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+}
+
+.customSelectError {
+    font-family: var(--font-primary);
+    font-weight: bold;
+    font-size: 14px;
+    color: red;
+}
+
+@media (max-width: 700px) {
+    .customSelectContainer {
+        width: 80%;
+    }
+}

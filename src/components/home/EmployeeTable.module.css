@@ -1,0 +1,96 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background-color: rgba(255, 255, 255, 0.4);
+    overflow-x: auto;
+}
+
+.tableHeader {
+    background-color: var(--color-background);
+    color: var(--font-color);
+}
+
+.tableHeaderCell, .tableCell {
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid var(--color-border);
+    color: var(--font-color);
+    font-family: var(--font-primary);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.tableRowEven {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.tableRowHover:hover {
+    background-color: var(--color-hover);
+}
+
+.tableActionIconContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.tableActionIcon {
+    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.tableActionIcon:hover {
+    transform: scale(1.2);
+}
+
+.tableDeleteIcon {
+    color: var(--color-accent);
+}
+
+.tableEditIcon {
+    color: var(--color-warning);
+}
+
+.salaryContainer {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggleIcon {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.toggleIcon:hover {
+    color: var(--color-primary);
+}
+
+@media (max-width: 900px) {
+    .tableHeaderCell, .tableCell {
+        padding: 0.4rem;
+        font-size: 0.75rem;
+    }
+
+    .tableActionIcon {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .table {
+        display: block;
+    }
+
+    .tableHeaderCell, .tableCell {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .tableRowEven {
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+}
